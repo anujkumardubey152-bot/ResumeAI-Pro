@@ -1,0 +1,10 @@
+streamlit
+pdfplumber
+pandas
+numpy
+matplotlib
+scikit-learn
+sentence-transformers
+google-genai
+reportlab
+nltk
