@@ -209,8 +209,8 @@ def calculate_ats(text):
             score+=points
 
     return min(score,100)
-    @st.cache_resource
-     def load_model():
+@st.cache_resource
+def load_model():
 
     return SentenceTransformer(
         "all-MiniLM-L6-v2"
