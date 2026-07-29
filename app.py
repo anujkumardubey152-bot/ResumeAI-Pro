@@ -1,42 +1,80 @@
+import re
 import streamlit as st
 import pdfplumber
 import tempfile
-import re
+from docx import Document
 
-from collections import Counter
+# ----------------------------
+# PAGE CONFIG
+# ----------------------------
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(
     page_title="ResumeAI Pro",
     page_icon="🤖",
     layout="wide"
 )
 
+# ----------------------------
+# SIDEBAR
+# ----------------------------
+
+with st.sidebar:
+
+    st.title("🤖 ResumeAI Pro")
+
+    st.markdown("---")
+
+    st.write("### Features")
+
+    st.success("✔ PDF Support")
+    st.success("✔ DOCX Support")
+    st.info("ATS Analysis")
+    st.info("Resume Matching")
+    st.info("AI Suggestions")
+    st.info("Analytics Dashboard")
+
+    st.markdown("---")
+
+    st.write("Version 1.0")
+
+# ----------------------------
+# HEADER
+# ----------------------------
+
 st.title("🤖 ResumeAI Pro")
 
-st.caption("AI Powered ATS Resume Analyzer")
+st.subheader("AI Powered ATS Resume Analyzer")
 
 st.markdown("---")
+
+# ----------------------------
+# INPUTS
+# ----------------------------
+
 uploaded_resume = st.file_uploader(
-    "Upload Resume (PDF)",
-    type=["pdf"]
+    "Upload Resume",
+    type=["pdf", "docx"]
 )
 
 job_description = st.text_area(
     "Paste Job Description",
-    height=250
+    height=220
 )
 
 analyze = st.button(
-    "Analyze Resume",
+    "🚀 Analyze Resume",
     use_container_width=True
 )
-def extract_text(pdf_path):
+
+# ----------------------------
+# PDF READER
+# ----------------------------
+
+def read_pdf(path):
 
     text = ""
 
-    with pdfplumber.open(pdf_path) as pdf:
+    with pdfplumber.open(path) as pdf:
 
         for page in pdf.pages:
 
@@ -47,278 +85,28 @@ def extract_text(pdf_path):
                 text += page_text + "\n"
 
     return text
-    SKILLS = [
 
-"Python","Java","C","C++","SQL","R",
+# ----------------------------
+# DOCX READER
+# ----------------------------
 
-"Machine Learning",
-"Deep Learning",
-"Artificial Intelligence",
-"NLP",
-"Natural Language Processing",
+def read_docx(file):
 
-"TensorFlow",
-"PyTorch",
-"Keras",
+    document = Document(file)
 
-"Scikit-learn",
+    text = ""
 
-"Pandas",
+    for paragraph in document.paragraphs:
 
-"NumPy",
+        text += paragraph.text + "\n"
 
-"Matplotlib",
+    return text
 
-"Seaborn",
+# ----------------------------
+# MAIN
+# ----------------------------
 
-"Plotly",
-
-"OpenCV",
-
-"Flask",
-
-"Django",
-
-"FastAPI",
-
-"Git",
-
-"GitHub",
-
-"Docker",
-
-"Kubernetes",
-
-"AWS",
-
-"Azure",
-
-"GCP",
-
-"IBM Cloud",
-
-"MySQL",
-
-"PostgreSQL",
-
-"MongoDB",
-
-"SQLite",
-
-"Linux",
-
-"Power BI",
-
-"Excel",
-
-"Data Analysis",
-
-"EDA",
-
-"Feature Engineering",
-
-"Feature Selection",
-
-"Classification",
-
-"Regression",
-
-"Clustering",
-
-"Decision Tree",
-
-"Random Forest",
-
-"XGBoost",
-
-"LightGBM",
-
-"Neural Networks",
-
-"LLM",
-
-"Generative AI",
-
-"Prompt Engineering",
-
-"LangChain",
-
-"Transformers",
-
-"HuggingFace",
-
-"Statistics",
-
-"Probability",
-
-"Data Structures",
-
-"Algorithms",
-
-"OOP",
-
-"DBMS",
-
-"Operating Systems",
-
-"Computer Vision",
-
-"Reinforcement Learning",
-
-"Time Series",
-
-"REST API",
-
-"Streamlit"
-
-]
-def calculate_ats(text):
-
-    score = 0
-
-    lower=text.lower()
-
-    rules={
-
-        "education":10,
-
-        "experience":20,
-
-        "skills":15,
-
-        "projects":15,
-
-        "certifications":10,
-
-        "python":5,
-
-        "machine learning":10,
-
-        "sql":5,
-
-        "github":5,
-
-        "linkedin":5
-
-    }
-
-    for keyword,points in rules.items():
-
-        if keyword in lower:
-
-            score+=points
-
-    return min(score,100)
-@st.cache_resource
-def load_model():
-
-    return SentenceTransformer(
-        "all-MiniLM-L6-v2"
-    )
-
-model=load_model()
-def calculate_match(resume,jd):
-
-    resume_embedding=model.encode([resume])
-
-    jd_embedding=model.encode([jd])
-
-    similarity=cosine_similarity(
-        resume_embedding,
-        jd_embedding
-    )[0][0]
-
-    return round(similarity*100,2)
-def missing_keywords(resume, jd):
-
-    resume_words = set(
-        re.findall(r"\b[a-zA-Z]+\b", resume.lower())
-    )
-
-    jd_words = set(
-        re.findall(r"\b[a-zA-Z]+\b", jd.lower())
-    )
-
-    stopwords = {
-        "the", "and", "or", "to", "a", "of", "for",
-        "with", "is", "are", "be", "an", "on",
-        "in", "by", "this", "that"
-    }
-
-    missing = sorted(
-        jd_words - resume_words - stopwords
-    )
-
-    return missing[:25]    jd_words=set(
-        re.findall(r"\b[a-zA-Z]+\b",jd.lower())
-    )
-
-    stopwords={
-
-        "the","and","or","to","a","of","for",
-        "with","is","are","be","an","on",
-        "in","by","this","that"
-
-    }
-
-    missing=sorted(
-
-        jd_words-resume_words-stopwords
-
-    )
-
-    return missing[:25]
-    def detect_sections(text):
-
-    lower=text.lower()
-
-    sections=[]
-
-    possible=[
-
-        "summary",
-
-        "skills",
-
-        "experience",
-
-        "projects",
-
-        "education",
-
-        "certifications",
-
-        "awards",
-
-        "languages"
-
-    ]
-
-    for section in possible:
-
-        if section in lower:
-
-            sections.append(section.title())
-
-    return sections
-    def suggestions(score,skills):
-
-    tips=[]
-
-    if score<70:
-        tips.append("Increase ATS keywords.")
-
-    if len(skills)<10:
-        tips.append("Add more technical skills.")
-
-    if "Docker" not in skills:
-        tips.append("Learning Docker can improve many AI/ML resumes.")
-
-    if "AWS" not in skills:
-        tips.append("Cloud skills such as AWS or Azure are valuable.")
-
-    return tips
-    if analyze:
+if analyze:
 
     if uploaded_resume is None:
 
@@ -326,298 +114,242 @@ def missing_keywords(resume, jd):
 
     elif job_description.strip() == "":
 
-        st.error("Please paste a job description.")
+        st.error("Please paste a Job Description.")
 
     else:
 
-        with st.spinner("Analyzing Resume..."):
+        with st.spinner("Reading Resume..."):
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            if uploaded_resume.name.endswith(".pdf"):
 
-                tmp.write(uploaded_resume.read())
+                with tempfile.NamedTemporaryFile(
+                    delete=False,
+                    suffix=".pdf"
+                ) as tmp:
 
-                resume_path = tmp.name
+                    tmp.write(uploaded_resume.read())
 
-            resume_text = extract_text(resume_path)
-
-            ats = calculate_ats(resume_text)
-
-            match = calculate_match(
-                resume_text,
-                job_description
-            )
-
-            skills = extract_skills(
-                resume_text
-            )
-
-            missing = missing_keywords(
-                resume_text,
-                job_description
-            )
-
-            sections = detect_sections(
-                resume_text
-            )
-
-            tips = suggestions(
-                ats,
-                skills
-            )
-
-        st.success("Resume Analysis Completed!")
-
-        st.divider()
-
-        col1, col2, col3 = st.columns(3)
-
-        col1.metric(
-            "ATS Score",
-            f"{ats}/100"
-        )
-
-        col2.metric(
-            "Match Score",
-            f"{match}%"
-        )
-
-        col3.metric(
-            "Skills Found",
-            len(skills)
-        )
-
-        st.divider()
-
-        left, right = st.columns(2)
-
-        with left:
-
-            st.subheader("📌 Resume Sections")
-
-            if sections:
-
-                for sec in sections:
-
-                    st.success(sec)
+                    resume_text = read_pdf(tmp.name)
 
             else:
 
-                st.warning("No sections detected.")
+                resume_text = read_docx(uploaded_resume)
 
-            st.subheader("🛠 Skills Found")
+        st.success("Resume Loaded Successfully!")
 
-            if skills:
+        st.markdown("---")
 
-                st.write(skills)
-
-            else:
-
-                st.warning("No skills detected.")
-
-        with right:
-
-            st.subheader("❌ Missing Keywords")
-
-            if missing:
-
-                st.write(missing)
-
-            else:
-
-                st.success("No important keywords missing.")
-
-            st.subheader("💡 Suggestions")
-
-            if tips:
-
-                for tip in tips:
-
-                    st.info(tip)
-
-            else:
-
-                st.success("Excellent Resume!")
-
-        st.divider()
-
-        st.subheader("📄 Resume Preview")
+        st.subheader("Resume Preview")
 
         st.text_area(
             "",
             resume_text,
-            height=350
+            height=500
         )
-        def resume_grade(score):
+
+        st.markdown("---")
+
+        st.subheader("Job Description")
+
+        st.text_area(
+            "",
+            job_description,
+            height=300
+        )
+        def calculate_ats_score(text):
+
+    score = 0
+    text = text.lower()
+
+    weights = {
+        "summary": 10,
+        "skills": 15,
+        "experience": 20,
+        "projects": 15,
+        "education": 10,
+        "certifications": 10,
+        "python": 5,
+        "machine learning": 5,
+        "sql": 5,
+        "github": 5
+    }
+
+    for keyword, points in weights.items():
+        if keyword in text:
+            score += points
+
+    return min(score, 100)
+    def resume_grade(score):
 
     if score >= 90:
         return "A+"
-
     elif score >= 80:
         return "A"
-
     elif score >= 70:
         return "B"
-
     elif score >= 60:
         return "C"
-
     elif score >= 50:
         return "D"
+    else:
+        return "F"
+        def detect_contact(text):
 
-    return "F"
-    def strengths(skills, ats):
+    email = re.findall(
+        r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
+        text
+    )
 
-    good = []
+    phone = re.findall(
+        r"(?:\+91[- ]?)?[6-9]\d{9}",
+        text
+    )
 
-    if ats >= 80:
-        good.append("Strong ATS compatibility")
+    return (
+        email[0] if email else "Not Found",
+        phone[0] if phone else "Not Found"
+    )
+    def detect_sections(text):
 
-    if len(skills) >= 15:
-        good.append("Good technical skill coverage")
+    sections = []
 
-    if "Python" in skills:
-        good.append("Python detected")
+    keywords = [
+        "summary",
+        "skills",
+        "experience",
+        "projects",
+        "education",
+        "certifications",
+        "awards",
+        "languages"
+    ]
 
-    if "Machine Learning" in skills:
-        good.append("Machine Learning experience")
+    lower = text.lower()
 
-    if "GitHub" in skills:
-        good.append("GitHub profile included")
+    for item in keywords:
 
-    return good
-    def weaknesses(skills, missing):
+        if item in lower:
+            sections.append(item.title())
 
-    bad = []
+    return sections
+    def detect_education(text):
 
-    if "Docker" not in skills:
-        bad.append("Docker not found")
+    education = [
+        "Bachelor",
+        "Master",
+        "B.Tech",
+        "M.Tech",
+        "B.E",
+        "MCA",
+        "BCA",
+        "MBA",
+        "PhD"
+    ]
 
-    if "AWS" not in skills:
-        bad.append("AWS not found")
+    found = []
 
-    if "TensorFlow" not in skills:
-        bad.append("TensorFlow not found")
+    for degree in education:
 
-    if len(missing) > 15:
-        bad.append("Many job description keywords are missing")
+        if degree.lower() in text.lower():
+            found.append(degree)
 
-    return bad
-    def skill_coverage(skills):
+    return found
+    def detect_experience(text):
 
-    return round((len(skills) / len(SKILLS)) * 100, 1)
-    def keyword_coverage(jd, missing):
+    keywords = [
+        "intern",
+        "internship",
+        "experience",
+        "worked",
+        "developer",
+        "engineer",
+        "analyst"
+    ]
 
-    total = len(set(re.findall(r"\b[a-zA-Z]+\b", jd.lower())))
+    total = 0
 
-    if total == 0:
-        return 0
+    lower = text.lower()
 
-    covered = total - len(missing)
+    for word in keywords:
 
-    return round((covered / total) * 100, 1)
-    grade = resume_grade(ats)
+        if word in lower:
+            total += 1
 
-strength = strengths(
-    skills,
-    ats
+    return total
+    resume_text = read_pdf(...)
+    ats = calculate_ats_score(resume_text)
+
+grade = resume_grade(ats)
+
+email, phone = detect_contact(resume_text)
+
+sections = detect_sections(resume_text)
+
+education = detect_education(resume_text)
+
+experience = detect_experience(resume_text)
+st.success("Resume Loaded Successfully!")
+
+st.markdown("---")
+
+col1, col2, col3 = st.columns(3)
+
+col1.metric(
+    "ATS Score",
+    f"{ats}/100"
 )
 
-weak = weaknesses(
-    skills,
-    missing
+col2.metric(
+    "Grade",
+    grade
 )
 
-skill_percent = skill_coverage(
-    skills
+col3.metric(
+    "Experience Indicators",
+    experience
 )
 
-keyword_percent = keyword_coverage(
-    job_description,
-    missing
-)
-tabs = st.tabs([
-    "📊 Overview",
-    "🛠 Skills",
-    "🔑 Keywords",
-    "📄 Resume"
-])
-with tabs[0]:
+st.progress(ats / 100)
 
-    col1, col2, col3, col4 = st.columns(4)
+st.markdown("---")
+left, right = st.columns(2)
 
-    col1.metric("ATS", f"{ats}/100")
+with left:
 
-    col2.metric("Match", f"{match}%")
+    st.subheader("Contact")
 
-    col3.metric("Grade", grade)
+    st.write("📧", email)
 
-    col4.metric("Skills", len(skills))
+    st.write("📞", phone)
 
-    st.markdown("### ATS Progress")
+    st.subheader("Education")
 
-    st.progress(ats / 100)
+    if education:
+        st.success(", ".join(education))
+    else:
+        st.warning("Not Detected")
 
-    st.markdown("### Match Progress")
+with right:
 
-    st.progress(match / 100)
+    st.subheader("Sections")
 
-    st.markdown("### Skill Coverage")
+    if sections:
 
-    st.progress(skill_percent / 100)
+        for section in sections:
 
-    st.markdown("### Keyword Coverage")
-
-    st.progress(keyword_percent / 100)
-    with tabs[1]:
-
-    st.subheader("Detected Skills")
-
-    st.write(skills)
-
-    st.divider()
-
-    st.subheader("Strengths")
-
-    for item in strength:
-
-        st.success(item)
-
-    st.subheader("Weaknesses")
-
-    for item in weak:
-
-        st.warning(item)
-        with tabs[2]:
-
-    st.subheader("Missing Keywords")
-
-    if missing:
-
-        st.write(missing)
+            st.success(section)
 
     else:
 
-        st.success("No important keywords missing.")
+        st.warning("No Sections Found")
+        st.markdown("---")
 
-    st.divider()
+st.subheader("Resume Preview")
 
-    st.subheader("Suggestions")
+st.text_area(
+    "",
+    resume_text,
+    height=450
+)
 
-    for tip in tips:
-
-        st.info(tip)
-        with tabs[3]:
-
-    st.subheader("Detected Sections")
-
-    st.write(sections)
-
-    st.divider()
-
-    st.text_area(
-        "Resume Text",
-        resume_text,
-        height=500
-    )
-    
-    
+        
