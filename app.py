@@ -229,13 +229,27 @@ def calculate_match(resume,jd):
     )[0][0]
 
     return round(similarity*100,2)
-    def missing_keywords(resume,jd):
+def missing_keywords(resume, jd):
 
-    resume_words=set(
-        re.findall(r"\b[a-zA-Z]+\b",resume.lower())
+    resume_words = set(
+        re.findall(r"\b[a-zA-Z]+\b", resume.lower())
     )
 
-    jd_words=set(
+    jd_words = set(
+        re.findall(r"\b[a-zA-Z]+\b", jd.lower())
+    )
+
+    stopwords = {
+        "the", "and", "or", "to", "a", "of", "for",
+        "with", "is", "are", "be", "an", "on",
+        "in", "by", "this", "that"
+    }
+
+    missing = sorted(
+        jd_words - resume_words - stopwords
+    )
+
+    return missing[:25]    jd_words=set(
         re.findall(r"\b[a-zA-Z]+\b",jd.lower())
     )
 
