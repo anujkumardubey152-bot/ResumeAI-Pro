@@ -210,7 +210,7 @@ def calculate_ats(text):
 
     return min(score,100)
     @st.cache_resource
-def load_model():
+     def load_model():
 
     return SentenceTransformer(
         "all-MiniLM-L6-v2"
