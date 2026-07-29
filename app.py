@@ -172,9 +172,9 @@ def extract_text(pdf_path):
 "Streamlit"
 
 ]
-    def calculate_ats(text):
+def calculate_ats(text):
 
-    score=0
+    score = 0
 
     lower=text.lower()
 
